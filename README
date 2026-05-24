@@ -1,1 +1,99 @@
 
+ Project Overview
+This project analyses a dataset of 5,000 records covering the global EV market in 2026 — spanning 10 brands, 4 vehicle types, 10 countries, and 4 regions. The pipeline covers database design in MySQL, exploratory analysis via SQL, and interactive visualisation in Power BI.
+MetricValueTotal EV Sales Units2.25 BillionDataset Size5,000 records · 16 columnsCountries Covered10Brands Analysed10 (Tesla, BYD, Toyota, BMW, etc.)Avg EV Price$55,633Avg Vehicle Range450 kmAvg Battery Capacity80 kWh
+
+🗄️ Database Schema
+The dataset was loaded into MySQL (ev_saelsdb) with a single fact table details:
+ColumnTypeDescriptionrecord_idVARCHARUnique record identifiercountryVARCHARCountry of saleregionVARCHARGeographic regionev_brandVARCHAREV manufacturervehicle_typeVARCHARCar / SUV / Truck / Busev_sales_unitsINTNumber of units soldbattery_capacity_kwhFLOATBattery size in kWhvehicle_range_kmFLOATRange per charge (km)charging_time_hoursFLOATTime to full charge (hrs)charging_stationsINTCharging stations countavg_ev_price_usdFLOATAverage price in USDenergy_consumption_kwhFLOATEnergy consumptiongovt_incentivesVARCHARGovernment incentive (Yes/No)market_adoption_rateFLOATAdoption rate (%)co2_reduction_mtFLOATCO₂ reduction in metric tonsyearINTYear of record
+
+🔍 SQL Analyses Performed
+1. Total EV Sales by Vehicle Type
+sqlSELECT vehicle_type, SUM(ev_sales_units) AS Total_sales
+FROM details
+GROUP BY vehicle_type;
+
+Trucks led at 575.7M units, closely followed by Cars (574.6M), SUVs (554.7M), and Buses (546.9M) — indicating evenly distributed demand across vehicle categories.
+
+2. Sales by Country
+sqlSELECT country, SUM(ev_sales_units) AS Total_sales
+FROM details
+GROUP BY country
+ORDER BY SUM(ev_sales_units) DESC;
+
+Canada topped the table at 255.9M units, followed by India (233.8M) and France (230.0M).
+
+3. Sales by Brand
+sqlSELECT ev_brand, SUM(ev_sales_units) AS Total_sales
+FROM details
+GROUP BY ev_brand
+ORDER BY SUM(ev_sales_units) DESC;
+
+Kia led brand rankings at 237.9M units, ahead of Nissan (234.9M) and Mercedes (233.3M).
+
+4. Market Adoption by Region
+sqlSELECT region, ROUND(AVG(market_adoption_rate), 2) AS adoption_rate
+FROM details
+GROUP BY region
+ORDER BY AVG(market_adoption_rate) DESC;
+
+Europe had the highest adoption rate (35.06%), followed by Oceania (34.93%) and North America (34.86%).
+
+5. Government Incentives Impact
+sqlSELECT govt_incentives, ROUND(AVG(market_adoption_rate), 2) AS adoption_rate
+FROM details
+GROUP BY govt_incentives;
+
+Countries with incentives averaged 34.88% adoption vs 34.82% without — showing a modest but consistent positive impact.
+
+6. Range vs Battery Capacity
+sqlSELECT battery_capacity_kwh, AVG(vehicle_range_km) AS avg_range
+FROM details
+GROUP BY battery_capacity_kwh;
+
+Positive correlation between battery size and range; average range across all vehicles: 450 km on an average battery of 80 kWh.
+
+7. Charging Infrastructure vs Adoption
+sqlSELECT country,
+       ROUND(AVG(charging_stations), 2) AS avg_stations,
+       ROUND(AVG(market_adoption_rate), 2) AS avg_adoption
+FROM details
+GROUP BY country
+ORDER BY country;
+
+Japan (106,200 avg stations), China (104,840), and UK (102,885) led charging infrastructure density.
+
+8. CO₂ Reduction by Country
+sqlSELECT country, ROUND(SUM(co2_reduction_mt), 2) AS co2_reduction
+FROM details
+GROUP BY country
+ORDER BY SUM(co2_reduction_mt);
+
+Europe led CO₂ reduction at 301,594 MT, followed by Asia (230,154 MT) and North America (154,565 MT).
+
+
+📊 Power BI Dashboard
+The Power BI report (ev_sales.pbix) translates all SQL insights into interactive visuals:
+
+KPI Cards — Total sales, avg price, avg range, avg battery
+Sales by Country — Bar chart ranked by total units
+Vehicle Type Breakdown — Donut / column chart
+Brand Performance — Comparative bar chart
+Regional Adoption Rate — Map or clustered bar
+Govt Incentives Impact — Side-by-side adoption comparison
+Charging Infrastructure vs Adoption — Scatter plot
+CO₂ Reduction by Region — Stacked bar / filled map
+
+
+💡 Key Insights
+
+🚛 Trucks and Cars are neck-and-neck — no single vehicle type dominates EV sales, suggesting broad market demand
+🌍 Europe leads adoption AND sustainability — highest adoption rate (35%) and CO₂ reduction (301K MT)
+🏭 Kia, Nissan & Mercedes outperform Tesla in total unit volume in this dataset
+⚡ Japan has the densest charging network (avg 106,200 stations per country record)
+💰 Government incentives show a measurable positive effect on adoption rates
+🔋 Average range of 450 km on an 80 kWh battery — competitive with many ICE alternatives
+
+
+🛠️ Tech Stack
+ToolPurposeMySQLDatabase creation & data loadingSQLExploratory and analytical queriesPower BIInteractive dashboard & visualisationCSVRaw data source
